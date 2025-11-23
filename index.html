@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>флуд BSD</title>
+    <style>
+        /* Основные стили и цветовая палитра */
+        :root {
+            --burgundy: #800020;
+            --dark-burgundy: #5a0017;
+            --black: #0a0a0a;
+            --dark-gray: #1a1a1a;
+            --red: #b3001b;
+            --gold: #d4af37;
+            --light-gold: #f4e4a6;
+            --white: #f5f5f5;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--black);
+            color: var(--white);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        /* Навигация */
+        nav {
+            background: linear-gradient(to right, var(--dark-burgundy), var(--burgundy));
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1rem;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--gold);
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 1rem;
+        }
+        
+        .nav-links a {
+            color: var(--white);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 0.8rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        
+        .nav-links a:hover {
+            background-color: var(--red);
+            color: var(--light-gold);
+        }
+        
+        .nav-links a.active {
+            background-color: var(--gold);
+            color: var(--dark-burgundy);
+        }
+        
+        /* Мобильное меню */
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .menu-toggle span {
+            width: 25px;
+            height: 3px;
+            background-color: var(--white);
+            margin: 3px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+        
+        /* Основной контент */
+        .container {
+            max-width: 1200px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        h1, h2, h3 {
+            color: var(--gold);
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--burgundy);
+            padding-bottom: 0.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        /* Карточки и секции */
+        .card {
+            background: linear-gradient(to bottom right, var(--dark-gray), var(--black));
+            border: 1px solid var(--burgundy);
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+        
+        .rule-item, .role-item {
+            margin-bottom: 1rem;
+            padding-left: 1rem;
+            border-left: 3px solid var(--red);
+            word-wrap: break-word;
+        }
+        
+       /* Галерея */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.gallery-item {
+    position: relative;
+    overflow: visible;
+    border-radius: 8px;
+    background-color: var(--dark-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--burgundy);
+    transition: all 0.3s ease;
+    padding: 4px;
+    box-sizing: border-box;
+}
+
+.gallery-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+    border-color: var(--light-gold);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    border-radius: 4px;
+    display: block;
+}
+
+.gallery-item:hover img {
+    transform: none;
+}
+
+.gallery-placeholder {
+    color: var(--light-gold);
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+    border: 2px solid var(--burgundy);
+    border-radius: 8px;
+}
+        /* Таблицы */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.2rem 0;
+            font-size: 0.9rem;
+        }
+        
+        th, td {
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid var(--burgundy);
+            word-break: break-word;
+        }
+        
+        th {
+            background-color: var(--dark-burgundy);
+            color: var(--gold);
+        }
+        
+        tr:hover {
+            background-color: rgba(128, 0, 32, 0.1);
+        }
+        
+        /* Кнопки и интерактивные элементы */
+        .btn {
+            display: inline-block;
+            background: linear-gradient(to right, var(--burgundy), var(--red));
+            color: var(--white);
+            padding: 0.6rem 1.2rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(to right, var(--red), var(--burgundy));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.4);
+        }
+        
+        .btn-gold {
+            background: linear-gradient(to right, var(--gold), #b8941f);
+            color: var(--dark-burgundy);
+        }
+        
+        .btn-gold:hover {
+            background: linear-gradient(to right, #b8941f, var(--gold));
+        }
+        
+        /* Футер */
+        footer {
+            background: linear-gradient(to right, var(--dark-burgundy), var(--black));
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+            text-align: center;
+            border-top: 1px solid var(--burgundy);
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            font-size: 0.9rem;
+        }
+        
+        /* Адаптивность для планшетов */
+        @media (max-width: 992px) {
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            }
+        }
+        
+        /* Адаптивность для мобильных устройств */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 0.5rem 1rem;
+            }
+            
+            .logo {
+                font-size: 1.3rem;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 60px;
+                left: -100%;
+                width: 80%;
+                height: calc(100vh - 60px);
+                background: linear-gradient(to bottom, var(--dark-burgundy), var(--black));
+                flex-direction: column;
+                align-items: center;
+                padding-top: 2rem;
+                transition: left 0.3s ease;
+                box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+                z-index: 99;
+            }
+            
+            .nav-links.active {
+                left: 0;
+            }
+            
+            .nav-links li {
+                margin: 0.8rem 0;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .nav-links a {
+                display: block;
+                padding: 1rem;
+                font-size: 1rem;
+                width: 100%;
+            }
+            
+            .menu-toggle {
+                display: flex;
+            }
+            
+            .container {
+                margin: 1rem auto;
+                padding: 0 0.8rem;
+            }
+            
+            h1 {
+                font-size: 1.7rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+            
+           /* Галерея */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.gallery-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    background-color: var(--dark-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--burgundy);
+    transition: all 0.3s ease;
+    padding: 4px;
+    box-sizing: border-box;
+    aspect-ratio: 1 / 1; /* Добавляем соотношение сторон */
+}
+
+.gallery-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3);
+    border-color: var(--light-gold);
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.gallery-item:hover img {
+    transform: scale(1.05);
+}
+
+.gallery-placeholder {
+    color: var(--light-gold);
+    text-align: center;
+    padding: 1rem;
+    font-size: 0.9rem;
+    border: 2px solid var(--burgundy);
+    border-radius: 8px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Адаптивность для планшетов */
+@media (max-width: 992px) {
+    .gallery {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 0.8rem;
+    }
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 768px) {
+    .gallery {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.6rem;
+    }
+    
+    .gallery-item {
+        aspect-ratio: 1 / 1;
+        height: auto;
+    }
+}
+
+/* Адаптивность для очень маленьких экранов */
+@media (max-width: 480px) {
+    .gallery {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .gallery-item {
+        height: auto;
+        min-height: 120px;
+    }
+}
+
+/* Для экранов меньше 360px */
+@media (max-width: 360px) {
+    .gallery {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.4rem;
+    }
+    
+    .gallery-item {
+        min-height: 100px;
+    }
+}
+
+/* Ландшафтная ориентация для мобильных */
+@media (orientation: landscape) and (max-width: 768px) {
+    .gallery {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.6rem;
+    }
+}
+
+/* Высокие экраны в портретной ориентации */
+@media (min-height: 700px) and (max-width: 768px) and (orientation: portrait) {
+    .gallery-item {
+        min-height: 140px;
+    }
+}
+            
+            table {
+                font-size: 0.85rem;
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            
+            th, td {
+                padding: 0.5rem 0.6rem;
+            }
+            
+            .btn {
+                padding: 0.7rem 1rem;
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .btn-container {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+        
+        /* Адаптивность для очень маленьких экранов */
+        @media (max-width: 480px) {
+            .logo {
+                font-size: 1.2rem;
+            }
+            
+            .container {
+                padding: 0 0.5rem;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            h2 {
+                font-size: 1.2rem;
+            }
+            
+            .gallery {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.5rem;
+            }
+            
+            .gallery-item {
+                height: 120px;
+            }
+            
+            .card {
+                padding: 0.8rem;
+            }
+            
+            th, td {
+                padding: 0.4rem 0.5rem;
+                font-size: 0.8rem;
+            }
+            
+            .footer-content {
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* Улучшения для очень высоких экранов */
+        @media (min-height: 1000px) and (max-width: 768px) {
+            .nav-links {
+                height: calc(100vh - 60px);
+                justify-content: flex-start;
+                padding-top: 2rem;
+            }
+        }
+        
+        /* Портретная ориентация */
+        @media (orientation: portrait) and (max-width: 768px) {
+            .gallery {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        /* Ландшафтная ориентация */
+        @media (orientation: landscape) and (max-width: 768px) {
+            .nav-links {
+                width: 60%;
+            }
+            
+            .gallery {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигация -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">BSD флуд</div>
+            <div class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#" class="nav-link active" data-page="home">Главная</a></li>
+                <li><a href="#" class="nav-link" data-page="rules">Правила</a></li>
+                <li><a href="#" class="nav-link" data-page="roles">Роли</a></li>
+                <li><a href="#" class="nav-link" data-page="rests">Ресты</a></li>
+                <li><a href="#" class="nav-link" data-page="norm">Норма</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- Основной контент -->
+    <div class="container">
+        <!-- Главная страница -->
+        <div id="home" class="page active">
+            <h1>Добро пожаловать во флуд BSD</h1>
+            
+            <div class="card">
+                <h2>О нашем флуде</h2>
+                <p>Мы - активный флуд поклонников Bungou Stray Dogs, где каждый может найти единомышленников, обсудить любимых персонажей и принять участие в ролевых играх.</p>
+                <p>На нашем сайте вы найдете всю необходимую информацию о правилах, ролях и активности в флуде.</p>
+                
+                <div style="text-align: center; margin-top: 2rem;">
+                    <a href="#" class="btn" id="explore-btn">Исследовать сайт</a>
+                </div>
+            </div>
+            
+            
+            <div class="gallery">
+                <div class="gallery-item">
+                    <div class="gallery-placeholder"><img src="ава.jpg" alt="ава"></div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-placeholder"><img src="дазай 1.jpg" alt="дазай"></div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-placeholder"><img src="чуя2.jpg" alt="чуя"></div>
+                </div>
+                <div class="gallery-item">
+                    <div class="gallery-placeholder"><img src="по в тазике.jpg" alt="я любимый"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Правила флуда -->
+        <div id="rules" class="page">
+            <h1>Правила флуда</h1>
+            
+            <div class="card">
+                <div class="rule-item">
+                    <h3>• Не знание правил не освобождает вас от ответственности!!!</h3>
+                </div>
+                
+                <div class="rule-item">
+                    <h3>• Порнография и связанный контент</h3>
+                    <p>Порнография, и то, что связано с порно и сексуальным наклоном запрещено. Если в сообщениях, то только под спойлером.</p>
+                </div>
+                
+                <div class="rule-item">
+                    <h3>• Спам</h3>
+                    <p>Спам считается за пять одинаковых сообщений. Или три стикера/гифки и т.д. подряд.</p>
+                </div>
+                
+                <div class="rule-item">
+                    <h3>• Оскорбление и слив личных данных</h3>
+                    <p>Оскорбление и слив личных данных - строго запрещается. Владелец это не поддерживает.</p>
+                    <p>Если оскорбление - наказание: мут. Если слив личных данных: бан, без возможности возвращения.</p>
+                </div>
+                
+                <div class="rule-item">
+                    <h3>• Калл (призыв участников)</h3>
+                    <p>Калл, а точнее бот которые созывает других запрещён для участников, только для администрации.</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Интерактивная проверка правил</h2>
+                <p>Проверьте свои знания правил флуд:</p>
+                
+                <div style="margin: 1.5rem 0;">
+                    <p><strong>Вопрос:</strong> Что считается спамом?</p>
+                    <div class="btn-container" style="margin: 1rem 0;">
+                        <button class="btn" onclick="checkAnswer(1, this)">3 одинаковых сообщения подряд</button>
+                        <button class="btn" onclick="checkAnswer(2, this)">5 одинаковых сообщений подряд</button>
+                        <button class="btn" onclick="checkAnswer(3, this)">7 одинаковых сообщений подряд</button>
+                    </div>
+                    <p id="answer-result" style="margin-top: 1rem; font-weight: bold;"></p>
+                </div>
+            </div>
+        </div>
+        
+       <!-- Роли -->
+<div id="roles" class="page">
+    <h1>Роли флуда</h1>
+    
+    <div class="card">
+        <h2>Система ролей</h2>
+        <ul style="list-style-type: none;">
+            <li><strong>Свободно-</strong> - роль доступна для взятия</li>
+            <li><strong>Бронь-♰</strong> - роль забронирована</li>
+            <li><strong>Занято-★</strong> - роль занята</li>
+            <li><strong>Админ-✬</strong> - администратор</li>
+            <li><strong>Влд/совлд-꥟</strong> - владелец/совладелец</li>
+        </ul>
+    </div>
+    
+    <h2>Вооружённое детективное агентство</h2>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Персонаж</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Дазай Осаму</td>
+                    <td>꥟(совлд)</td>
+                </tr>
+                <tr>
+                    <td>Юкичи Фукудзава</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Куникида Доппо</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Ацуши Накаджима</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Кёка Изуми</td>
+                    <td>★</td>
+                </tr>
+                <tr>
+                    <td>Рампо Эдогава</td>
+                    <td>★</td>
+                </tr>
+                <tr>
+                    <td>Кенджи Миядзава</td>
+                    <td>★</td>
+                </tr>
+                <tr>
+                    <td>Джуничиро Танидзаки</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Наоми Танидзаки</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Акико Йосано</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Кирако Харуно</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Катай Таяма</td>
+                    <td>Свободно</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <h2>Портовая мафия</h2>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Персонаж</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Мори Огай</td>
+                    <td>★</td>
+                </tr>
+                <tr>
+                    <td>Элис Огай</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Чуя Накахара</td>
+                    <td>꥟(влд)</td>
+                </tr>
+                <tr>
+                    <td>Рюноскэ Акутагава</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Гин Акутагава</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Сакуноске Одасаку</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Мичизу Тачихара</td>
+                    <td>★</td>
+                </tr>
+                <tr>
+                    <td>Поль Верлен</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Кьюсаку Юмено</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Рьюро Хироцу</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Ичиё Хигучи</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Каджи Мотоджиро</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Артур Рембо</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Липпманн</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Коё Озаки</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Альбатросс</td>
+                    <td>Свободно</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <h2>Гильдия</h2>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Персонаж</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Френсис Скотт Кей Фицджеральд</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Эдгар Аллан По</td>
+                    <td>★</td>
+                </tr>
+                <tr>
+                    <td>Говард Филлипс Лавкрафт</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Натаниэль Готорн</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Марк Твен</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Маргарет Митчелл</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Люси Мод Монтгомери</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Джон Стейнбек</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Луиза Мэй Олкотт</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Герман Мелвилл</td>
+                    <td>Свободно</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <h2>Крысы Мёртвого дома и Смерть небожителей</h2>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Персонаж</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Фёдор Достоевский</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Николай Гоголь</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Сигма</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Брем Стокер</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Иван Гончаров</td>
+                    <td>Свободно</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <h2>Ищейки</h2>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Персонаж</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Очи Фукучи</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Тэттё Суэхиро</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Сайгику Дзено</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Теруко</td>
+                    <td>Свободно</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <h2>Специальный отдел по делам одарённых</h2>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Персонаж</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Анго Сакагучи</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Яхие Муракаса</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Мидзуки Цудзимура</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Такуичи Аоки</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Танеда Сантока</td>
+                    <td>Свободно</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <h2>Другие</h2>
+    <div class="card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Персонаж</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Шибусава Тацухико</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Ая Кода</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Сосэки Нацумэ</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Юкито Аяцудзи</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Агата Кристи</td>
+                    <td>Свободно</td>
+                </tr>
+                <tr>
+                    <td>Муситаро Огури</td>
+                    <td>Свободно</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+        
+        <!-- Ресты -->
+        <div id="rests" class="page">
+            <h1>Система рестов</h1>
+            
+            <div class="card">
+                <h2>Правила рестов</h2>
+                <p>Ресты можно брать до трех недель, не больше, но если надо взять больше можете обговорить это с влд.</p>
+                
+                <div class="rule-item">
+                    <h3>В ресте:</h3>
+                    <p></p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2>Информация о рестах</h2>
+                <p>Для оформления реста обратитесь напрямую к администрации флуда.</p>
+                <p>Пожалуйста, укажите следующую информацию:</p>
+                <ul style="list-style-type: none; margin-top: 1rem;">
+                    <li>• Ваш персонаж</li>
+                    <li>• Планируемые даты реста</li>
+                    <li>• Причину реста</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Норма -->
+        <div id="norm" class="page">
+            <h1>Норма активности</h1>
+            
+            <div class="card">
+                <h2>Правила активности</h2>
+                <p>Норма в неделю 60 сообщений, если не набрал норму:</p>
+                <ul style="list-style-type: none; margin-top: 1rem;">
+                    <li>• 1 раз - варн</li>
+                    <li>• 2 раз - уже бан</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Футер -->
+    <footer>
+        <div class="footer-content">
+            <p>BSD флуд &copy; 2025. Все права защищены.</p>
+            <p>Сайт создан для фанатского флуда по Bungou Stray Dogs.</p>
+        </div>
+    </footer>
+    
+    <script>
+        // Мобильное меню
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+        
+        menuToggle.addEventListener('click', function() {
+            navLinks.classList.toggle('active');
+            
+            // Анимация гамбургер-меню
+            const spans = menuToggle.querySelectorAll('span');
+            if (navLinks.classList.contains('active')) {
+                spans[0].style.transform = 'rotate(45deg) translate(5px, 5px)';
+                spans[1].style.opacity = '0';
+                spans[2].style.transform = 'rotate(-45deg) translate(7px, -6px)';
+            } else {
+                spans[0].style.transform = 'none';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'none';
+            }
+        });
+        
+        // Закрытие меню при клике на ссылку
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                navLinks.classList.remove('active');
+                
+                // Сброс анимации гамбургер-меню
+                const spans = menuToggle.querySelectorAll('span');
+                spans[0].style.transform = 'none';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'none';
+            });
+        });
+        
+        // Навигация между страницами
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Убираем активный класс у всех ссылок
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                
+                // Добавляем активный класс к текущей ссылке
+                this.classList.add('active');
+                
+                // Скрываем все страницы
+                document.querySelectorAll('.page').forEach(page => {
+                    page.classList.remove('active');
+                });
+                
+                // Показываем выбранную страницу
+                const pageId = this.getAttribute('data-page');
+                document.getElementById(pageId).classList.add('active');
+                
+                // Прокрутка к верху страницы
+                window.scrollTo(0, 0);
+            });
+        });
+        
+        // Кнопка "Исследовать сайт" на главной
+        document.getElementById('explore-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelector('[data-page="rules"]').click();
+        });
+        
+        // Проверка ответа на вопрос в правилах
+        function checkAnswer(answer, button) {
+            const result = document.getElementById('answer-result');
+            const buttons = button.parentElement.querySelectorAll('button');
+            
+            // Сбрасываем стили всех кнопок
+            buttons.forEach(btn => {
+                btn.style.background = 'linear-gradient(to right, var(--burgundy), var(--red))';
+            });
+            
+            if (answer === 2) {
+                button.style.background = 'linear-gradient(to right, #2e7d32, #4caf50)';
+                result.textContent = 'Правильно! Спам - это 5 одинаковых сообщений подряд.';
+                result.style.color = '#4caf50';
+            } else {
+                button.style.background = 'linear-gradient(to right, #c62828, #d32f2f)';
+                result.textContent = 'Неверно! Правильный ответ: 5 одинаковых сообщений подряд.';
+                result.style.color = '#f44336';
+            }
+        }
+        
+        // Закрытие меню при клике вне его области
+        document.addEventListener('click', function(e) {
+            if (!navLinks.contains(e.target) && !menuToggle.contains(e.target) && navLinks.classList.contains('active')) {
+                navLinks.classList.remove('active');
+                
+                // Сброс анимации гамбургер-меню
+                const spans = menuToggle.querySelectorAll('span');
+                spans[0].style.transform = 'none';
+                spans[1].style.opacity = '1';
+                spans[2].style.transform = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
